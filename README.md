@@ -39,6 +39,8 @@ webhook_url = https://hooks.slack.com/services/...
   * Number of seconds to wait for the platform's website to be loaded before attempting to log in. Can take a while.
 * login_url
   * This should stay as is, unless Synack changes something
+* platform_url
+  * Default: https://platform.synack.com, can be overridden here for other Synack platforms
 * email
   * The email address you use to log into the platform
 * password
