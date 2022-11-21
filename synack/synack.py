@@ -27,30 +27,32 @@ warnings.filterwarnings("ignore")
 class synack:
     def __init__(self):
         self.session = requests.Session()
-        self.jsonResponse = []
-        self.assessments = []
-        self.token = ""
-        self.notificationToken = ""
-        self.url_registered_summary = "https://platform.synack.com/api/targets/registered_summary"
-        self.url_scope_summary = "https://platform.synack.com/api/targets/"
-        self.url_activate_target = "https://platform.synack.com/api/launchpoint"
-        self.url_assessments = "https://platform.synack.com/api/assessments"
-        self.url_vulnerabilities = "https://platform.synack.com/api/vulnerabilities"
-        self.url_drafts = "https://platform.synack.com/api/drafts"
-        self.url_unregistered_slugs = "https://platform.synack.com/api/targets?filter%5Bprimary%5D=unregistered&filter%5Bsecondary%5D=all&filter%5Bcategory%5D=all&sorting%5Bfield%5D=dateUpdated&sorting%5Bdirection%5D=desc&pagination%5Bpage%5D="
-        self.url_profile = "https://platform.synack.com/api/profiles/me"
-        self.url_analytics = "https://platform.synack.com/api/listing_analytics/categories?listing_id="
-        self.url_hydra = "https://platform.synack.com/api/hydra_search/search/"
-        self.url_logout = "https://platform.synack.com/api/logout"
-        self.url_notification_token = "https://platform.synack.com/api/users/notifications_token"
-        self.url_notification_api = "https://notifications.synack.com/api/v2/"
-        self.url_transactions = "https://platform.synack.com/api/transactions"
-        self.url_lp_credentials = "https://platform.synack.com/api/launchpoint/credentials"
-        self.webheaders = {}
         self.configFile = str(Path.home())+"/.synack/synack.conf"
         self.firefoxProfile = str(Path.home())+"/.synack/selenium.profile"
         self.config = configparser.ConfigParser()
         self.config.read(self.configFile)
+
+        self.jsonResponse = []
+        self.assessments = []
+        self.token = ""
+        self.notificationToken = ""
+        self.platform_url = self.config['DEFAULT'].get('platform_url',"https://platform.synack.com")
+        self.url_registered_summary = self.platform_url+"/api/targets/registered_summary"
+        self.url_scope_summary = self.platform_url+"/api/targets/"
+        self.url_activate_target = self.platform_url+"/api/launchpoint"
+        self.url_assessments = self.platform_url+"/api/assessments"
+        self.url_vulnerabilities = self.platform_url+"/api/vulnerabilities"
+        self.url_drafts = self.platform_url+"/api/drafts"
+        self.url_unregistered_slugs = self.platform_url+"/api/targets?filter%5Bprimary%5D=unregistered&filter%5Bsecondary%5D=all&filter%5Bcategory%5D=all&sorting%5Bfield%5D=dateUpdated&sorting%5Bdirection%5D=desc&pagination%5Bpage%5D="
+        self.url_profile = self.platform_url+"/api/profiles/me"
+        self.url_analytics = self.platform_url+"/api/listing_analytics/categories?listing_id="
+        self.url_hydra = self.platform_url+"/api/hydra_search/search/"
+        self.url_logout = self.platform_url+"/api/logout"
+        self.url_notification_token = self.platform_url+"/api/users/notifications_token"
+        self.url_notification_api = "https://notifications.synack.com/api/v2/"
+        self.url_transactions = self.platform_url+"/api/transactions"
+        self.url_lp_credentials = self.platform_url+"/api/launchpoint/credentials"
+        self.webheaders = {}
         self.email = self.config['DEFAULT']['email']
         self.password = self.config['DEFAULT']['password']
         self.login_wait = int(self.config['DEFAULT']['login_wait'])
@@ -80,7 +82,7 @@ class synack:
     def getSessionToken(self):
         if Path(self.sessionTokenPath).exists():
             with open(self.sessionTokenPath, "r") as f:
-                self.token = f.readline()
+                self.token = f.readline().strip()
             f.close()
         else:
             self.connectToPlatform()
@@ -360,7 +362,7 @@ class synack:
         orgID = self.__getOrgID(codename)
         slug = self.getTargetID(codename)
         if category.lower() == "web application":
-            scopeURL = "https://platform.synack.com/api/asset/v1/organizations/"+orgID+"/owners/listings/"+slug+"/webapps"
+            scopeURL = self.platform_url+"/api/asset/v1/organizations/"+orgID+"/owners/listings/"+slug+"/webapps"
             allRules = []
             oosRules = []
             response = self.try_requests("GET", scopeURL, 10)
@@ -481,7 +483,7 @@ class synack:
                     j+=1
             return(list(allRules),list(oosRules))
         if category.lower() == "host":
-            scopeURL = "https://platform.synack.com/api/targets/"+slug+"/cidrs?page=all"
+            scopeURL = self.platform_url+"/api/targets/"+slug+"/cidrs?page=all"
             cidrs = []
             try:
                 response = self.try_requests("GET", scopeURL, 10)
@@ -662,7 +664,7 @@ class synack:
                 next_page = False
                 pageNum += 1
         for i in range (len(unregistered_slugs)): 
-            url_register_slug = "https://platform.synack.com/api/targets/"+unregistered_slugs[i]+"/signup"
+            url_register_slug = self.platform_url+"/api/targets/"+unregistered_slugs[i]+"/signup"
             data='{"ResearcherListing":{"terms":1}}'
             response = self.try_requests("POST", url_register_slug, 10, data)
             slug = unregistered_slugs[i]
@@ -718,9 +720,9 @@ class synack:
         grant_token = jsonResponse['grant_token']
 
         # 2 requests required here to confirm the grant token - once to the HTML page and once to the API
-        response = self.try_requests("GET", "https://platform.synack.com/?grant_token="+grant_token, 1)
+        response = self.try_requests("GET", self.platform_url+"/?grant_token="+grant_token, 1)
         self.webheaders['X-Requested-With'] = "XMLHttpRequest"
-        response = self.try_requests("GET", "https://platform.synack.com/token?grant_token="+grant_token, 1)
+        response = self.try_requests("GET", self.platform_url+"/token?grant_token="+grant_token, 1)
         jsonResponse = response.json()
         access_token = jsonResponse['access_token']
 
