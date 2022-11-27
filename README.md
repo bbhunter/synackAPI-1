@@ -30,6 +30,7 @@ This is a required config file, and is expected to be in the directory ~/.synack
 [DEFAULT]
 login_wait = 15
 login_url = https://login.synack.com
+platform_url = https://platform.synack.com
 email = your.email@domain.tld
 password = your.synack.password
 authy_secret = ABCDEFGHIJKLMNOPQRSTUVWXYZ======
