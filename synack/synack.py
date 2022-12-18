@@ -362,137 +362,148 @@ class synack:
         orgID = self.__getOrgID(codename)
         slug = self.getTargetID(codename)
         if category.lower() == "web application":
-            scopeURL = self.platform_url+"/api/asset/v1/organizations/"+orgID+"/owners/listings/"+slug+"/webapps"
+            category = "web application"
+            scopeURL = self.platform_url+"/api/asset/v2/assets?listingUid%5B%5D="+slug+"&organizationUid%5B%5D="+orgID+"&assetType%5B%5D=webapp"
             allRules = []
             oosRules = []
             response = self.try_requests("GET", scopeURL, 10)
             jsonResponse = response.json()
             j = 0
-            while j < len(jsonResponse):
-                if jsonResponse[j]['status'] in ["out","tbd"]:
-                    tmpOOS = set()
-                    for thisRule in range(len(jsonResponse[j]['rules'])):
-                        url = urlparse(jsonResponse[j]['rules'][thisRule]['rule'])
-                        scheme = url.scheme
-                        netloc = url.netloc
-                        path   = url.path
-                        port   = url.port
-                        wildcard = False
-                        if len(netloc) != 0:
-                            subdomain = netloc.split('.')[0]
-                            if subdomain == "*":
-                                wildcard = True
-                                netloc = ".".join(netloc.split('.')[1:])
-                        else:
-                            if len(path) != 0:
-                                netloc = path.split('/')[0]
-                                checkWildcard = netloc.split('.')[0]
-                                if checkWildcard == "*":
+            for j in range(len(jsonResponse)):
+                for k in range(len(jsonResponse[j]['listings'])):
+                    if jsonResponse[j]['listings'][k]['scope'] in ["out","tbd"]:
+                        tmpOOS = set()
+                        for thisRule in range(len(jsonResponse[j]['scopeRules'])):
+                            url = urlparse(jsonResponse[j]['scopeRules'][thisRule]['rule'])
+                            scheme = url.scheme
+                            netloc = url.netloc
+                            path   = url.path
+                            port   = url.port
+                            wildcard = False
+                            if len(netloc) != 0:
+                                subdomain = netloc.split('.')[0]
+                                if subdomain == "*":
                                     wildcard = True
-                                    if ":" in netloc:
-                                        port = netloc.split(':')[1]
-                                        thisURL = netloc.split(':')[0]
-                                        netloc = ".".join(thisURL.split('.')[1:])
-                                    else:
-                                        port = 443
-                                        netloc = ".".join(netloc.split('.')[1:])
-                                else:
-                                    if ":" in netloc:
-                                        port = netloc.split(':')[1]
-                                        thisURL = netloc.split(':')[0]
-                                        netloc = ".".join(thisURL.split('.')[0:])
-                                    else:
-                                        port = 443
-                                        netloc = ".".join(netloc.split('.')[0:])
-                                path = "/" + "/".join(path.split('/')[1:])
-                            else:
-                                continue
-                        oosDict = {
-                                        'scheme' : scheme,
-                                        'netloc': netloc,
-                                        'path': path,
-                                        'port': port,
-                                        'wildcard': wildcard,
-                                        'fullURI' : scheme+netloc
-
-                        }
-                    oosRules.append(oosDict)            
-                    j+=1
-                else:
-                    for thisRule in range(len(jsonResponse[j]['rules'])):
-                        url = urlparse(jsonResponse[j]['rules'][thisRule]['rule'])
-                        scheme = url.scheme
-                        netloc = url.netloc
-                        path   = url.path
-                        port   = url.port
-                        wildcard = False
-
-                        if len(netloc) != 0:
-                            subdomain = netloc.split('.')[0]
-                            if subdomain == "*":
-                                wildcard = True
                                 netloc = ".".join(netloc.split('.')[1:])
-                        else:
-                            if len(path) != 0:
-                                netloc = path.split('/')[0]
-                                checkWildcard = netloc.split('.')[0]
-                                if checkWildcard == "*":
-                                    wildcard = True
-                                    if ":" in netloc:
-                                        port = netloc.split(':')[1]
-                                        thisURL = netloc.split(':')[0]
-                                        netloc = ".".join(thisURL.split('.')[1:])
-                                    else:
-                                        port = 443
-                                        netloc = ".".join(netloc.split('.')[1:])
-                                else:
-                                    if ":" in netloc:
-                                        port = netloc.split(':')[1]
-                                        thisURL = netloc.split(':')[0]
-                                        netloc = ".".join(thisURL.split('.')[0:])
-                                    else:
-                                        port = 443
-                                        netloc = ".".join(netloc.split('.')[0:])
-                                path = "/" + "/".join(path.split('/')[1:])
                             else:
-                                continue
-                        if jsonResponse[j]['rules'][thisRule]['status'] in ["out","tbd"]:
+                                if len(path) != 0:
+                                    netloc = path.split('/')[0]
+                                    checkWildcard = netloc.split('.')[0]
+                                    if checkWildcard == "*":
+                                        wildcard = True
+                                        if ":" in netloc:
+                                            port = netloc.split(':')[1]
+                                            thisURL = netloc.split(':')[0]
+                                            netloc = ".".join(thisURL.split('.')[1:])
+                                        else:
+                                            port = 443
+                                            netloc = ".".join(netloc.split('.')[1:])
+                                    else:
+                                        if ":" in netloc:
+                                            port = netloc.split(':')[1]
+                                            thisURL = netloc.split(':')[0]
+                                            netloc = ".".join(thisURL.split('.')[0:])
+                                        else:
+                                            port = 443
+                                            netloc = ".".join(netloc.split('.')[0:])
+                                            path = "/" + "/".join(path.split('/')[1:])
+                                else:
+                                    continue
                             oosDict = {
-                                        'scheme' : scheme,
-                                        'netloc': netloc,
-                                        'path': path,
-                                        'port': port,
-                                        'wildcard': wildcard,
-                                        'fullURI' : scheme+netloc
-
+                                'scheme' : scheme,
+                                'netloc': netloc,
+                                'path': path,
+                                'port': port,
+                                'wildcard': wildcard,
+                                'fullURI' : scheme+netloc
                             }
-                            oosRules.append(oosDict)
-                            continue
-                        else:
-                            pass
-
-                        scopeDict = {
-                                        'scheme' : scheme,
-                                        'netloc': netloc,
-                                        'path': path,
-                                        'port': port,
-                                        'wildcard': wildcard,
-                                        'fullURI' : scheme+netloc
-                                    }
-                        allRules.append(scopeDict)
-                    j+=1
+                        oosRules.append(oosDict)            
+                    else:
+                        for thisRule in range(len(jsonResponse[j]['scopeRules'])):
+                            url = urlparse(jsonResponse[j]['scopeRules'][thisRule]['rule'])
+                            scheme = url.scheme
+                            netloc = url.netloc
+                            path   = url.path
+                            port   = url.port
+                            wildcard = False
+                            if len(netloc) != 0:
+                                subdomain = netloc.split('.')[0]
+                                if subdomain == "*":
+                                    wildcard = True
+                                    netloc = ".".join(netloc.split('.')[1:])
+                            else:
+                                if len(path) != 0:
+                                    netloc = path.split('/')[0]
+                                    checkWildcard = netloc.split('.')[0]
+                                    if checkWildcard == "*":
+                                        wildcard = True
+                                        if ":" in netloc:
+                                            port = netloc.split(':')[1]
+                                            thisURL = netloc.split(':')[0]
+                                            netloc = ".".join(thisURL.split('.')[1:])
+                                        else:
+                                            port = 443
+                                            netloc = ".".join(netloc.split('.')[1:])
+                                    else:
+                                        if ":" in netloc:
+                                            port = netloc.split(':')[1]
+                                            thisURL = netloc.split(':')[0]
+                                            netloc = ".".join(thisURL.split('.')[0:])
+                                        else:
+                                            port = 443
+                                            netloc = ".".join(netloc.split('.')[0:])
+                                            path = "/" + "/".join(path.split('/')[1:])
+                                else:
+                                    continue
+                            if jsonResponse[j]['scopeRules'][thisRule]['rule'] in ["out","tbd"]:
+                                oosDict = {
+                                'scheme' : scheme,
+                                'netloc': netloc,
+                                'path': path,
+                                'port': port,
+                                'wildcard': wildcard,
+                                'fullURI' : scheme+netloc
+                                }
+                                oosRules.append(oosDict)
+                                continue
+                            else:
+                                pass
+                            scopeDict = {
+                                'scheme' : scheme,
+                                'netloc': netloc,
+                                'path': path,
+                                'port': port,
+                                'wildcard': wildcard,
+                                'fullURI' : scheme+netloc
+                            }
+                            allRules.append(scopeDict)
             return(list(allRules),list(oosRules))
-        if category.lower() == "host":
-            scopeURL = self.platform_url+"/api/targets/"+slug+"/cidrs?page=all"
-            cidrs = []
-            try:
+        
+        elif category.lower() == "host":
+            category = "host"
+            allRules = []
+            pageNum = 1
+            next_page = True
+            while next_page:
+                scopeURL = self.platform_url+"/api/asset/v2/assets?listingUid%5B%5D="+slug+"&organizationUid%5B%5D="+orgID+"&assetType%5B%5D=host&hostType%5B%5D=cidr&scope%5B%5D=in&scope%5B%5D=discovered&active=true&sort=location&sortDir=asc&page="+str(pageNum)+"&perPage=500"
                 response = self.try_requests("GET", scopeURL, 10)
-            except requests.exceptions.RequestException as e:
-                raise SystemExit(e)
-            temp = json.dumps(response.json()['cidrs']).replace("[","").replace("]","").replace("\"","").replace(", ","\n").split("\n")
-            cidrs.extend(temp)
-            cidrs = list(set(cidrs))
-            return(cidrs)
+                jsonResponse = response.json()
+                if (len(jsonResponse)!=0):
+                    for i in range(len(jsonResponse)):
+                        for k in range(len(jsonResponse[i]['listings'])):
+                            if jsonResponse[i]['listings'][k]['scope'] in ["out","tbd"]:
+                                continue
+                            else:
+                                for thisRule in range(len(jsonResponse[i]['scopeRules'])):
+                                    cidr = jsonResponse[i]['scopeRules'][thisRule]['rule']
+                                    if cidr[-3:] == "/32":
+                                        allRules.append(cidr[:-3])
+                                    else:
+                                        allRules.extend(getIPs(cidr))
+                    pageNum += 1
+                else:
+                    next_page = False
+            return(allRules)
 
 ########################################
 ## This converts CIDR list to IP list ##
