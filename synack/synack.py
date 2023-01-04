@@ -494,12 +494,11 @@ class synack:
                             if jsonResponse[i]['listings'][k]['scope'] in ["out","tbd"]:
                                 continue
                             else:
-                                for thisRule in range(len(jsonResponse[i]['scopeRules'])):
-                                    cidr = jsonResponse[i]['scopeRules'][thisRule]['rule']
-                                    if cidr[-3:] == "/32":
-                                        allRules.append(cidr[:-3])
-                                    else:
-                                        allRules.extend(getIPs(cidr))
+                                cidr = jsonResponse[i]['host']['cidr']
+                                if cidr[-3:] == "/32":
+                                    allRules.append(cidr[:-3])
+                                else:
+                                    allRules.extend(self.getIPs(cidr))
                     pageNum += 1
                 else:
                     next_page = False
@@ -509,12 +508,10 @@ class synack:
 ## This converts CIDR list to IP list ##
 ## This is a much faster method, previous method was causing problems on large hosts ##
 ########################################
-    def getIPs(self, cidrs):
+    def getIPs(self, cidr):
         IPs = []
-        for i in range(len(cidrs)):
-            if cidrs[i] != "":
-                for ip in IPNetwork(cidrs[i]):
-                    IPs.append(str(ip))
+        for ip in IPNetwork(cidr):
+            IPs.append(str(ip))
         return(IPs)
     
 ##############################################
