@@ -363,7 +363,7 @@ class synack:
         slug = self.getTargetID(codename)
         if category.lower() == "web application":
             category = "web application"
-            scopeURL = self.platform_url+"/api/asset/v2/assets?listingUid%5B%5D="+slug+"&organizationUid%5B%5D="+orgID+"&assetType%5B%5D=webapp"
+            scopeURL = self.platform_url+"/api/asset/v2/assets?listingUid%5B%5D="+slug+"&organizationUid%5B%5D="+orgID+"&assetType%5B%5D=webapp&active=true&sort=location&sortDir=asc&page=1&perPage=500"
             allRules = []
             oosRules = []
             response = self.try_requests("GET", scopeURL, 10)
