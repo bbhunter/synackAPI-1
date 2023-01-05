@@ -455,7 +455,7 @@ class synack:
                                             path = "/" + "/".join(path.split('/')[1:])
                                 else:
                                     continue
-                            if jsonResponse[j]['scopeRules'][thisRule]['rule'] in ["out","tbd"]:
+                            if jsonResponse[j]['scopeRules'][thisRule]['scope'] in ["out","tbd"]:
                                 oosDict = {
                                 'scheme' : scheme,
                                 'netloc': netloc,
