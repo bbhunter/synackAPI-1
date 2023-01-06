@@ -993,13 +993,15 @@ class synack:
             if not jsonResponse:
                 break
             for i in range(len(jsonResponse)):
-                if jsonResponse[i]["title"] == "CashOut":
+                if jsonResponse[i]["title"] == "Cash Out":
                     if float(jsonResponse[i]['amount']) < 0:
                         amount = float(jsonResponse[i]['amount']) * -1
                     else:
                         amount = float(jsonResponse[i]['amount'])
                     ts = datetime.datetime.fromtimestamp(jsonResponse[i]['created_at'])
-                    transactions.append(ts.strftime('%Y-%m-%d')+","+str(amount))
+                    thisPayoutList = [ts.strftime('%Y-%m-%d'),str(amount)]
+#                    transactions.append(ts.strftime('%Y-%m-%d')+","+str(amount))
+                    transactions.append(thisPayoutList)
             pageIterator=pageIterator+1
         return(transactions)
         
