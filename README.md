@@ -17,6 +17,9 @@ This is a library and set of scripts that make SRT life a little easier when int
 # Acknowledgements
 Thank you Malcolm, Nicolas, and pmnh for making this better!
 
+## UPDATE
+I won't support mission bots. Please don't ask. A major re-write is coming due to API changes. - lvl0x00
+
 # Configuration requirements 
 ## Operating System
 This has been developed on LP+ (Linux). I have no idea if it will work on Windows. It might, but your mileage may vary. I do not use windows. If you do, and you want to test, please do. 
