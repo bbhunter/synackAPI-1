@@ -509,9 +509,15 @@ class synack:
 ## This is a much faster method, previous method was causing problems on large hosts ##
 ########################################
     def getIPs(self, cidr):
+        cidrs = []
+        if type(cidr) == list:
+            cidrs = cidr
+        else: # string?
+            cidrs = [cidr]
         IPs = []
-        for ip in IPNetwork(cidr):
-            IPs.append(str(ip))
+        for cidr in cidrs:
+            for ip in IPNetwork(cidr):
+                IPs.append(str(ip))
         return(IPs)
     
 ##############################################
