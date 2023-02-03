@@ -48,6 +48,7 @@ class synack:
         self.url_analytics = self.platform_url+"/api/listing_analytics/categories?listing_id="
         self.url_hydra = self.platform_url+"/api/hydra_search/search/"
         self.url_logout = self.platform_url+"/api/logout"
+        self.url_patch_verifications = self.platform_url+"/api/patch_verifications"
         self.url_notification_token = self.platform_url+"/api/users/notifications_token"
         self.url_notification_api = "https://notifications.synack.com/api/v2/"
         self.url_transactions = self.platform_url+"/api/transactions"
@@ -150,7 +151,7 @@ class synack:
                         newHeaders = dict(self.webheaders)
                         newHeaders['Content-Type'] = "application/json"
                         # PATCH request does not support `json=` parameter
-                        response = self.session.patch(URL, headers=newHeaders, proxies=proxyDict, data=extra, verify=False)
+                        response = self.session.patch(URL, headers=newHeaders, proxies=proxyDict, json=extra, verify=False)
                         if response.status_code == 401 and platform in netloc:
                             self.connectToPlatform()
                             self.getSessionToken()
@@ -206,7 +207,7 @@ class synack:
                         # PATCH request does not support `json=` parameter
                         newHeaders = dict(self.webheaders)
                         newHeaders['Content-Type'] = "application/json"
-                        response = self.session.request("PATCH", URL, headers=newHeaders, data=extra, verify=False)
+                        response = self.session.request("PATCH", URL, headers=newHeaders, json=extra, verify=False)
                         if response.status_code == 401 and platform in netloc:
                             self.connectToPlatform()
                             self.getSessionToken()
@@ -531,6 +532,23 @@ class synack:
             if jsonResponse[i]['written_assessment']['passed'] == True:
                 self.assessments.append(jsonResponse[i]['category_name'])
             i+=1
+
+##############################################
+## Returns the list of patch verifications  ##
+##############################################
+    def getPatchVerifications(self):
+        response = self.try_requests("GET", self.url_patch_verifications+"?show_all=0&pagination%5Bpage%5D=1&pagination%5Bper_page%5D=50", 10)
+        jsonResponse = response.json()
+        return jsonResponse
+
+    def acceptPatchVerification(self, id):
+        url_accept_pv = self.url_patch_verifications + "/" + str(id)
+        data={"accepted":True,"id":id}
+        response = self.try_requests("PATCH", url_accept_pv, 1, data)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
 
 ##########################################################
 ## This gets endpoints from Web Application "Analytics" ##
